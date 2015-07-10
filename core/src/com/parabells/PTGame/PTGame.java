@@ -10,9 +10,26 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.parabells.PTScreens.GameScreen;
 
 public class PTGame extends Game {
-	
+	private float screenWidth, screenHeight;
+
+	public enum GameState{
+		PAUSE, RUNNING, GAMEOVER
+	}
+
+	public GameState currentState;
+
 	@Override
 	public void create () {
+		screenHeight = Gdx.graphics.getHeight();
+		screenWidth = Gdx.graphics.getWidth();
 		setScreen(new GameScreen(this));
+	}
+
+	public float getScreenHeight() {
+		return screenHeight;
+	}
+
+	public float getScreenWidth() {
+		return screenWidth;
 	}
 }

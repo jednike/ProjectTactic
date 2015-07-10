@@ -1,12 +1,15 @@
 package com.parabells.PTScreens;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameWorld.GameRenderer;
 import com.parabells.PTGameWorld.GameWorld;
+import com.parabells.PTHelpers.GameAction;
 
 public class GameScreen implements Screen {
     private PTGame game;
+    private GameAction gameAction;
     private GameWorld gameWorld;
     private GameRenderer gameRenderer;
 
@@ -14,17 +17,27 @@ public class GameScreen implements Screen {
         this.game = game;
         gameWorld = new GameWorld(game);
         gameRenderer = new GameRenderer(game, gameWorld);
+        gameAction = new GameAction(gameWorld);
+        Gdx.input.setInputProcessor(gameAction);
+        game.currentState = PTGame.GameState.RUNNING;
     }
 
     @Override
     public void show() {
-        gameWorld.update();
-        gameRenderer.render();
     }
 
     @Override
     public void render(float delta) {
-
+        switch (game.currentState){
+            case PAUSE:
+                break;
+            case RUNNING:
+                gameWorld.update(delta);
+                gameRenderer.render();
+                break;
+            case GAMEOVER:
+                break;
+        }
     }
 
     @Override
