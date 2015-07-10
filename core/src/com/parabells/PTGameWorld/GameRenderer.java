@@ -8,12 +8,20 @@ import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameObjects.Mob;
 import com.parabells.PTGameObjects.Planet;
 
+/**
+ * Class for rendering
+ */
 public class GameRenderer {
     private PTGame game;
     private GameWorld gameWorld;
     private OrthographicCamera camera;
     private ShapeRenderer shapeRenderer;
 
+    /**
+     * Constructor
+     * @param game - super game class
+     * @param gameWorld - game world
+     */
     public GameRenderer(PTGame game, GameWorld gameWorld){
         this.game = game;
         this.gameWorld = gameWorld;
@@ -24,6 +32,9 @@ public class GameRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
+    /**
+     * Rendering method
+     */
     public void render(){
         Gdx.gl20.glClearColor(0, 0, 0, 0);
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);

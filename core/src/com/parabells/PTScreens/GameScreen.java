@@ -7,12 +7,19 @@ import com.parabells.PTGameWorld.GameRenderer;
 import com.parabells.PTGameWorld.GameWorld;
 import com.parabells.PTHelpers.GameAction;
 
+/**
+ * Class for game's screen
+ */
 public class GameScreen implements Screen {
     private PTGame game;
     private GameAction gameAction;
     private GameWorld gameWorld;
     private GameRenderer gameRenderer;
 
+    /**
+     * Constructor
+     * @param game - super game class
+     */
     public GameScreen(PTGame game){
         this.game = game;
         gameWorld = new GameWorld(game);

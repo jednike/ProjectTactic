@@ -1,12 +1,18 @@
 package com.parabells.PTHelpers;
 
 import com.badlogic.gdx.InputProcessor;
-import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameWorld.GameWorld;
 
+/**
+ * Class for processing with game's screen
+ */
 public class GameAction implements InputProcessor {
     private GameWorld gameWorld;
 
+    /**
+     * Constructor
+     * @param gameWorld - game's world
+     */
     public GameAction(GameWorld gameWorld){
         this.gameWorld = gameWorld;
     }
