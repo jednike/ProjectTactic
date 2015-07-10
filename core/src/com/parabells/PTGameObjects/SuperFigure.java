@@ -13,6 +13,7 @@ public class SuperFigure {
     private String hostName;
     private Boolean isSelected;
     private Boolean isMove;
+    public int ID;
 
     /**
      * Constructor
@@ -21,7 +22,8 @@ public class SuperFigure {
      * @param radius - radius
      * @param hostName - player who owns the object
      */
-    public SuperFigure(float x, float y, float radius, String hostName){
+    public SuperFigure(int ID, float x, float y, float radius, String hostName){
+        this.ID = ID;
         figure = new Circle(x, y, radius);
         isSelected = false;
         isMove = false;
@@ -162,5 +164,13 @@ public class SuperFigure {
      */
     public SuperFigure getTarget() {
         return target;
+    }
+
+    /**
+     * Getter for ID
+     * @return - ID
+     */
+    public int getID() {
+        return ID;
     }
 }

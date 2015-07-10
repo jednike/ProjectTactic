@@ -5,6 +5,7 @@ package com.parabells.PTGameObjects;
  */
 public class Mob extends SuperFigure {
     private float HP;
+    private float damage;
 
     /**
      * Constructor
@@ -14,9 +15,10 @@ public class Mob extends SuperFigure {
      * @param HP - HP's mob
      * @param hostName - player's name
      */
-    public Mob(float x, float y, float radius, float HP, String hostName) {
-        super(x, y, radius, hostName);
+    public Mob(int ID, float x, float y, float radius, float HP, float damage, String hostName) {
+        super(ID, x, y, radius, hostName);
         this.HP = HP;
+        this.damage = damage;
     }
 
     /**
@@ -25,5 +27,13 @@ public class Mob extends SuperFigure {
      */
     public float getHP() {
         return HP;
+    }
+
+    /**
+     * Getter for damage
+     * @return - gamage
+     */
+    public float getDamage() {
+        return damage;
     }
 }

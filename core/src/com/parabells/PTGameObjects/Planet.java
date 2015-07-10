@@ -15,8 +15,9 @@ public class Planet extends SuperFigure{
      * @param radius - radius
      * @param hostName - player who owns the object
      */
-    public Planet(float x, float y, float radius, String hostName) {
-        super(x, y, radius, hostName);
+    public Planet(int ID, float x, float y, float radius, float timeToControl, String hostName) {
+        super(ID, x, y, radius, hostName);
+        this.timeToControl = timeToControl;
     }
 
     /**

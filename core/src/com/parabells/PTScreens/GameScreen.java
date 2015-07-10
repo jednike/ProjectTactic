@@ -35,6 +35,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
+        if(delta > .15f){
+            delta = .15f;
+        }
+
         switch (game.currentState){
             case PAUSE:
                 break;
