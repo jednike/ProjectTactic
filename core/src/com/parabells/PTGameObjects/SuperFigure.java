@@ -1,5 +1,6 @@
 package com.parabells.PTGameObjects;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
 
 /**
@@ -13,6 +14,7 @@ public class SuperFigure {
     private String hostName;
     private Boolean isSelected;
     private Boolean isMove;
+    private Color color;
     public int ID;
 
     /**
@@ -22,8 +24,9 @@ public class SuperFigure {
      * @param radius - radius
      * @param hostName - player who owns the object
      */
-    public SuperFigure(int ID, float x, float y, float radius, String hostName){
+    public SuperFigure(int ID, float x, float y, float radius, String hostName, Color color){
         this.ID = ID;
+        this.color = color;
         figure = new Circle(x, y, radius);
         isSelected = false;
         isMove = false;
@@ -172,5 +175,13 @@ public class SuperFigure {
      */
     public int getID() {
         return ID;
+    }
+
+    public Color getColor() {
+        return color;
+    }
+
+    public void setColor(Color color) {
+        this.color = color;
     }
 }

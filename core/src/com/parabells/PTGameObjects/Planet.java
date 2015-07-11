@@ -1,6 +1,9 @@
 package com.parabells.PTGameObjects;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Circle;
+
+import java.util.Collection;
 
 /**
  * Class for planet
@@ -15,8 +18,8 @@ public class Planet extends SuperFigure{
      * @param radius - radius
      * @param hostName - player who owns the object
      */
-    public Planet(int ID, float x, float y, float radius, float timeToControl, String hostName) {
-        super(ID, x, y, radius, hostName);
+    public Planet(int ID, float x, float y, float radius, float timeToControl, String hostName,  Color color) {
+        super(ID, x, y, radius, hostName, color);
         this.timeToControl = timeToControl;
     }
 

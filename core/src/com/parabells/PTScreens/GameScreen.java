@@ -35,8 +35,8 @@ public class GameScreen implements Screen {
 
     @Override
     public void render(float delta) {
-        if(delta > .15f){
-            delta = .15f;
+        if(delta > .033f){
+            delta = .033f;
         }
 
         switch (game.currentState){
