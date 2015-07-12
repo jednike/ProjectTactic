@@ -34,6 +34,40 @@ public class SuperFigure {
     }
 
     /**
+     * Method for moving to target
+     */
+    public void moving() {
+        if (isMove) {
+            if(target == null) {
+                if (!figure.overlaps(new Circle(newX, newY, figure.radius))) {
+                    figure.x += stepX;
+                    figure.y += stepY;
+                }
+            } else {
+                if (!figure.overlaps(target.getFigure())) {
+                    figure.x += (target.getFigure().x - figure.x)/200;
+                    figure.y += (target.getFigure().y - figure.y)/200;
+                }
+            }
+        }
+    }
+
+    public void setNextPosition(float newX, float newY, SuperFigure target){
+        if(isSelected){
+            stepX = (newX - figure.x)/200;
+            stepY = (newY - figure.y)/200;
+            isSelected = false;
+            if(target == null) {
+                this.newX = newX;
+                this.newY = newY;
+            } else {
+                this.target = target;
+            }
+            isMove = true;
+        }
+    }
+
+    /**
      * Getter for circle
      * @return - circle
      */
