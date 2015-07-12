@@ -1,7 +1,7 @@
 package com.parabells.PTGameObjects;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.math.Circle;
+import com.parabells.PTHelpers.Circle;
 
 /**
  * Parent class for game objects
