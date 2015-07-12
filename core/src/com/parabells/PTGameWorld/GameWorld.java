@@ -9,7 +9,6 @@ import com.parabells.PTGameObjects.Planet;
 import com.parabells.PTGameObjects.SuperFigure;
 
 import java.util.Stack;
-import java.util.Vector;
 
 /**
  * Base game methods class
@@ -21,8 +20,9 @@ public class GameWorld {
     private Stack<Planet> planets;
     private Stack<Mob> mobs;
     private String playerName;
-    private Boolean isSelected;
+    private Boolean isMobSelected, isPlanetSelected;
     private float mobRadius, HP, reloadTime, attackRadius, damage;
+    private float planetRadius, timeToControl, timeToRespawn;
     private int size = 20;
 
     /**
@@ -33,11 +33,18 @@ public class GameWorld {
         this.game = game;
         bulletFrom = new Stack<Vector2>();
         bulletTo = new Stack<Vector2>();
+        //Mob's variables
         mobRadius = 5;
         HP = 100;
         reloadTime = 5;
         attackRadius = 50;
         damage = 10;
+
+        //Planet's variables
+        planetRadius = 30;
+        timeToControl = 5;
+        timeToRespawn = 1;
+
         playerName = "PLAYER1";
         startGame();
     }
@@ -47,10 +54,11 @@ public class GameWorld {
      */
     private void startGame(){
         planets = new Stack<Planet>();
-        isSelected = false;
-        planets.push(new Planet(0, game.getScreenWidth()/10, game.getScreenHeight()/2, 30, 5, "PLAYER1", Color.GREEN));
-        planets.push(new Planet(1, game.getScreenWidth()/2, game.getScreenHeight()/2, 30, 5, "NEUTRAL", Color.BLUE));
-        planets.push(new Planet(2, 9*game.getScreenWidth()/10, game.getScreenHeight()/2, 30, 5, "PLAYER2", Color.RED));
+        isMobSelected = false;
+        isPlanetSelected = false;
+        planets.push(new Planet(0, game.getScreenWidth()/10, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "PLAYER1", Color.GREEN));
+        planets.push(new Planet(1, game.getScreenWidth()/2, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "NEUTRAL", Color.BLUE));
+        planets.push(new Planet(2, 9*game.getScreenWidth()/10, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "PLAYER2", Color.RED));
         mobs = new Stack<Mob>();
         for (int i = 0; i < planets.size(); i++){
             addMobsToPlanet(i);
@@ -93,6 +101,12 @@ public class GameWorld {
      */
     public void update(float delta) {
         for (Planet planet: planets){
+            if(planet.getTimeToRespawn() >= 0){
+                planet.setTimeToRespawn(planet.getTimeToRespawn() - delta);
+            } else{
+                //respawnToPlanet(planet);
+                planet.setTimeToRespawn(timeToRespawn);
+            }
             if(onlyEnemiesNearPlanet(planet)){
                 if(!planet.getHostName().equals("NEUTRAL")) {
                     if (planet.getTimeToControl() >= 0) {
@@ -125,7 +139,7 @@ public class GameWorld {
                     if(attackMob.getFigure().overlaps(new Circle(mob.getFigure().x, mob.getFigure().y, mob.getAtackRadius())) && !attackMob.getHostName().equals(mob.getHostName())) {
                         bulletFrom.push(new Vector2(mob.getFigure().x, mob.getFigure().y));
                         bulletTo.push(new Vector2(attackMob.getFigure().x, attackMob.getFigure().y));
-                        mob.setHP(attackMob.getHP() - mob.getDamage());
+                        attackMob.setHP(attackMob.getHP() - mob.getDamage());
                         mob.setReloadTime(reloadTime);
                         if(attackMob.getHP() < 0){
                             mobs.remove(attackMob);
@@ -136,14 +150,42 @@ public class GameWorld {
             }
             moving(mob);
         }
-        planets.get(1).getFigure().x += 0.1;
-        planets.get(1).getFigure().y += 0.1;
     }
 
+    private void respawnToPlanet(Planet planet){
+        float radius = planet.getFigure().radius + mobRadius;
+        Boolean isAdded = false;
+        while(!isAdded) {
+            if(planet.getNumberMobs() >= size){
+                radius += mobRadius;
+            }
+            double angle = (2 * Math.PI) / size * planet.getNumberMobs();
+            float posX = (float) (planet.getFigure().x + radius * Math.cos(angle));
+            float posY = (float) (planet.getFigure().y + radius * Math.sin(angle));
+            for(Mob mob: mobs){
+                if(mob.getFigure().overlaps(new Circle(posX, posY, mobRadius))){
+                    planet.setNumberMobs(planet.getNumberMobs() + 1);
+                    break;
+                }
+            }
+            isAdded = true;
+            mobs.push(new Mob(mobs.size(), posX, posY, mobRadius, HP, reloadTime, attackRadius, damage, planet.getHostName(), planet.getColor()));
+        }
+
+    }
+
+    /**
+     * Getter for mass shot(start)
+     * @return - mass shot
+     */
     public Stack<Vector2> getBulletFrom() {
         return bulletFrom;
     }
 
+    /**
+     * Getter for mass shot(end)
+     * @return - mass shot
+     */
     public Stack<Vector2> getBulletTo() {
         return bulletTo;
     }
@@ -218,7 +260,7 @@ public class GameWorld {
         if(target == null){
             command = "MovM" + (int)newX +"-"+(int)newY;
         } else{
-            command = "FolM" + target.getID();
+            command = "FolM" + (target instanceof Planet?"P":"M") + target.getID();
         }
         messageText = "From" + 1 + command +":";
         Boolean isFirst = true;
@@ -231,8 +273,8 @@ public class GameWorld {
                     messageText += "," + mob.getID();
                 }
                 float k = (newX - mob.getFigure().x)/Math.abs(newY - mob.getFigure().y);
-                mob.setStepX(k);
-                mob.setStepY(newY - mob.getFigure().y > 0 ? 1:-1);
+                mob.setStepX((newX - mob.getFigure().x)/200);
+                mob.setStepY((newY - mob.getFigure().y)/200);
                 mob.setIsSelected(false);
                 mob.setNewX(newX);
                 mob.setNewY(newY);
@@ -240,11 +282,17 @@ public class GameWorld {
                 mob.setIsMove(true);
             }
         }
+        isMobSelected = false;
+        System.out.println(messageText);
+    }
 
+    private void movePlanetToPoint(float newX, float newY, SuperFigure target){
+        String command;
+        Boolean isFirst = true;
         if(target == null){
             command = "MovP" + (int)newX +"-"+(int)newY;
         } else{
-            command = "FolP" + target.getID();
+            command = "FolP" + (target instanceof Planet?"P":"M") + target.getID();
         }
         messageText = "From" + 1 + command+":";
         for(Planet mob: planets){
@@ -256,8 +304,8 @@ public class GameWorld {
                     messageText += "," + mob.getID();
                 }
                 float k = (newX - mob.getFigure().x)/Math.abs(newY - mob.getFigure().y);
-                mob.setStepX(k);
-                mob.setStepY(newY - mob.getFigure().y > 0 ? 1:-1);
+                mob.setStepX((newX - mob.getFigure().x)/200);
+                mob.setStepY((newY - mob.getFigure().y)/200);
                 mob.setIsSelected(false);
                 mob.setNewX(newX);
                 mob.setNewY(newY);
@@ -265,7 +313,7 @@ public class GameWorld {
                 mob.setIsMove(true);
             }
         }
-        isSelected = false;
+        isPlanetSelected = false;
         System.out.println(messageText);
     }
 
@@ -277,26 +325,37 @@ public class GameWorld {
     public void clickOnWorld(int screenX, int screenY) {
         screenY = (int) (game.getScreenHeight() - screenY);
         Circle helpCircle = new Circle(screenX, screenY, 1);
-        if(checkOnTouch(helpCircle) == null && isSelected){
-            moveToPoint(screenX, screenY, null);
+        if(checkOnTouch(helpCircle) == null){
+            if(isMobSelected) {
+                moveToPoint(screenX, screenY, null);
+            }
+            if(isPlanetSelected){
+                movePlanetToPoint(screenX, screenY, null);
+            }
         } else if(checkOnTouch(helpCircle) instanceof Planet) {
             Planet planet = (Planet) checkOnTouch(helpCircle);
             if (planet.getHostName().equals(playerName)) {
-                isSelected = true;
+                isPlanetSelected = true;
                 planet.setIsSelected(true);
             } else{
-                if(isSelected) {
+                if(isPlanetSelected) {
+                    movePlanetToPoint(planet.getFigure().x, planet.getFigure().y, planet);
+                }
+                if(isMobSelected) {
                     moveToPoint(planet.getFigure().x, planet.getFigure().y, planet);
                 }
             }
         } else if(checkOnTouch(helpCircle) instanceof Mob) {
             Mob mob = (Mob) checkOnTouch(helpCircle);
             if (mob.getHostName().equals(playerName)) {
-                isSelected = true;
+                isMobSelected = true;
                 mob.setIsSelected(true);
             } else{
-                if(isSelected) {
+                if(isMobSelected) {
                     moveToPoint(mob.getFigure().x, mob.getFigure().y, mob);
+                }
+                if(isPlanetSelected) {
+                    movePlanetToPoint(mob.getFigure().x, mob.getFigure().y, mob);
                 }
             }
         }
