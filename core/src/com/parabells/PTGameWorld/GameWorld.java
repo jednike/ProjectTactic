@@ -2,14 +2,16 @@ package com.parabells.PTGameWorld;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
-import com.parabells.PTCommands.MovM;
-import com.parabells.PTHelpers.Circle;
 import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameObjects.Mob;
 import com.parabells.PTGameObjects.Planet;
 import com.parabells.PTGameObjects.SuperFigure;
+import com.parabells.PTHelpers.Circle;
+import com.parabells.PTHelpers.Utils;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -17,11 +19,11 @@ import java.util.Stack;
  */
 public class GameWorld {private PTGame game;
     private Stack<Vector2> bulletFrom, bulletTo;
-    private String messageText;
-    private Stack<Planet> planets;
-    private Stack<Mob> mobs;
-    private String playerName;
-    private int mobSelected, planetSelected;
+    private ArrayList<Planet> planets;
+    private ArrayList<Mob> mobs;
+    private ArrayList<Integer> selectedID;
+    private int playerID;
+    private boolean isSelected;
     private float mobRadius, HP, reloadTime, attackRadius, damage;
     private float planetRadius, timeToControl, timeToRespawn;
     private int size = 20;
@@ -34,19 +36,20 @@ public class GameWorld {private PTGame game;
         this.game = game;
         bulletFrom = new Stack<Vector2>();
         bulletTo = new Stack<Vector2>();
+        isSelected = false;
         //Mob's variables
-        mobRadius = 5;
+        mobRadius = 5*game.getScreenWidth()/1024;
         HP = 100;
         reloadTime = 5;
-        attackRadius = 50;
-        damage = 10;
+        attackRadius = 50*game.getScreenWidth()/1024;
+        damage = 50;
 
         //Planet's variables
-        planetRadius = 30;
+        planetRadius = 30*game.getScreenWidth()/1024;
         timeToControl = 5;
-        timeToRespawn = 2;
+        timeToRespawn = 0.01f;
 
-        playerName = "PLAYER1";
+        playerID = 1;
         startGame();
     }
 
@@ -54,13 +57,12 @@ public class GameWorld {private PTGame game;
      * Start actions(Server part!)
      */
     private void startGame(){
-        planets = new Stack<Planet>();
-        mobSelected = 0;
-        planetSelected = 0;
-        planets.push(new Planet(0, game.getScreenWidth()/10, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "PLAYER1", Color.GREEN));
-        planets.push(new Planet(1, game.getScreenWidth()/2, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "NEUTRAL", Color.BLUE));
-        planets.push(new Planet(2, 9*game.getScreenWidth()/10, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 0, "PLAYER2", Color.RED));
-        mobs = new Stack<Mob>();
+        planets = new ArrayList<Planet>();
+        selectedID = new ArrayList<Integer>();
+        planets.add(new Planet(0, game.getScreenWidth()/10, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 1));
+        planets.add(new Planet(1, game.getScreenWidth()/2, game.getScreenHeight()/2, planetRadius, timeToControl, timeToRespawn, 2));
+        planets.add(new Planet(2, 9 * game.getScreenWidth() / 10, game.getScreenHeight() / 2, planetRadius, timeToControl, timeToRespawn, Utils.NEUTRAL_OWNER_ID));
+        mobs = new ArrayList<Mob>();
         for (int i = 0; i < planets.size(); i++){
             addMobsToPlanet(i);
         }
@@ -76,15 +78,31 @@ public class GameWorld {private PTGame game;
             float radius = planets.get(numberPlanet).getFigure().radius + 2*mobRadius;
             float posX = (float) (planets.get(numberPlanet).getFigure().x + radius*Math.cos(angle));
             float posY = (float) (planets.get(numberPlanet).getFigure().y + radius*Math.sin(angle));
-            mobs.push(new Mob(mobs.size(), posX, posY, mobRadius, HP, reloadTime, attackRadius, damage, planets.get(numberPlanet).getHostName(), planets.get(numberPlanet).getColor()));
+            mobs.add(new Mob(mobs.size(), posX, posY, mobRadius, HP, reloadTime, attackRadius, damage, planets.get(numberPlanet).getOwnerID()));
         }
+    }
+
+    public float getReloadTime() {
+        return reloadTime;
+    }
+
+    public float getTimeToRespawn() {
+        return timeToRespawn;
+    }
+
+    public float getTimeToControl() {
+        return timeToControl;
+    }
+
+    public int getPlayerID() {
+        return playerID;
     }
 
     /**
      * Getter for stack's mob
      * @return - stack's mob(for render)
      */
-    public Stack<Mob> getMobs() {
+    public List<Mob> getMobs() {
         return mobs;
     }
 
@@ -92,7 +110,7 @@ public class GameWorld {private PTGame game;
      * Getter for stack planets
      * @return - stack's planets(for render)
      */
-    public Stack<Planet> getPlanets() {
+    public List<Planet> getPlanets() {
         return planets;
     }
 
@@ -101,69 +119,27 @@ public class GameWorld {private PTGame game;
      * @param delta - delta time
      */
     public void update(float delta) {
-        for (Planet planet: planets){
-            if(!planet.getHostName().equals("NEUTRAL")) {
-                if (planet.getTimeToRespawn() >= 0) {
-                    planet.setTimeToRespawn(planet.getTimeToRespawn() - delta);
-                } else {
-                    respawnToPlanet(planet);
-                    planet.setTimeToRespawn(timeToRespawn);
-                }
+        for (Planet planet : planets) {
+            planet.update(this, delta);
+            if(planet.isNewMobRespawn()){
+                respawnToPlanet(planet);
             }
-            String invader = whoIsInvader(planet);
-            if(!invader.equals("NOBODY")){
-                if(!planet.getHostName().equals("NEUTRAL")) {
-                    if (planet.getTimeToControl() >= 0) {
-                        planet.setTimeToControl(planet.getTimeToControl() - delta);
-                    } else {
-                        if(planet.getHostName().equals(playerName) && planet.getIsSelected()){
-                            planetSelected--;
-                        }
-                        planet.setIsMove(false);
-                        planet.setHostName("NEUTRAL");
-                        planet.setColor(Color.BLUE);
-                        planet.setTimeToControl(5);
-                    }
-                } else {
-                    if (planet.getTimeToControl() >= 0) {
-                        planet.setTimeToControl(planet.getTimeToControl() - delta);
-                    } else {
-                        planet.setHostName(invader);
-                        planet.setColor(Color.GREEN);
-                        planet.setTimeToControl(5);
-                    }
-                }
-            } else {
-                planet.moving();
-            }
+            planet.setInvader(whoIsInvader(planet));
         }
-        for (Mob mob: mobs){
-            if(mob.getReloadTime() >= 0){
-                mob.setReloadTime(mob.getReloadTime() - delta);
-            } else{
-                for(Mob attackMob: mobs){
-                    if(attackMob.getFigure().overlaps(new Circle(mob.getFigure().x, mob.getFigure().y, mob.getAtackRadius())) && !attackMob.getHostName().equals(mob.getHostName())) {
-                        bulletFrom.push(new Vector2(mob.getFigure().x, mob.getFigure().y));
-                        bulletTo.push(new Vector2(attackMob.getFigure().x, attackMob.getFigure().y));
-                        attackMob.setHP(attackMob.getHP() - mob.getDamage());
-                        mob.setReloadTime(reloadTime);
-                        if(attackMob.getHP() < 0){
-                            if(mob.getHostName().equals(playerName) && mob.getIsSelected()){
-                                mobSelected--;
-                            }
-                            mobs.remove(attackMob);
-                            return;
-                        }
-                    }
-                }
+        Iterator<Mob> iter = mobs.iterator();
+        while (iter.hasNext()) {
+            Mob mob = iter.next();
+            if(mob.isRemove()){
+                iter.remove();
+            } else {
+                mob.update(this, delta);
             }
-            mob.moving();
         }
     }
 
     private void respawnToPlanet(Planet planet){
         float radius = planet.getFigure().radius + 2*mobRadius;
-        Boolean isAdded = false;
+        boolean isAdded = false;
         int number = 0;
         while(!isAdded) {
             if(number%size==0){
@@ -181,7 +157,7 @@ public class GameWorld {private PTGame game;
                 }
             }
             if(isAdded) {
-                mobs.push(new Mob(mobs.size(), posX, posY, mobRadius, HP, reloadTime, attackRadius, damage, planet.getHostName(), planet.getColor()));
+                mobs.add(new Mob(mobs.size(), posX, posY, mobRadius, HP, reloadTime, attackRadius, damage, planet.getOwnerID()));
             }
         }
 
@@ -208,17 +184,17 @@ public class GameWorld {private PTGame game;
      * @param planet - our planet
      * @return - enemy name
      */
-    private String whoIsInvader(Planet planet){
-        String invader = "";
+    private int whoIsInvader(Planet planet){
+        int invader = Utils.NEUTRAL_OWNER_ID;
         for (Mob mob: mobs){
-            if(mob.getFigure().overlaps(new Circle(planet.getFigure().x, planet.getFigure().y, 2*planet.getFigure().radius))){
-                if(mob.getHostName().equals(planet.getHostName())){
-                    return "NOBODY";
+            if(mob.getFigure().overlaps(new Circle(planet.getFigure().x, planet.getFigure().y, 2 * planet.getFigure().radius))){
+                if(mob.getOwnerID() == planet.getOwnerID()){
+                    return Utils.NEUTRAL_OWNER_ID;
                 }
-                if(invader.equals("")){
-                    invader = mob.getHostName();
-                } else if(!invader.equals(mob.getHostName())){
-                    return "NOBODY";
+                if(invader == Utils.NEUTRAL_OWNER_ID){
+                    invader = mob.getOwnerID();
+                } else if(invader != mob.getOwnerID()){
+                    return Utils.NEUTRAL_OWNER_ID;
                 }
             }
         }
@@ -231,73 +207,35 @@ public class GameWorld {private PTGame game;
      * @param newY - target position y
      * @param target - target
      */
-    private void moveToPoint(float newX, float newY, SuperFigure target, Boolean itIsMine){
-        int selected[] = new int[mobSelected];
-        Boolean isFirst = true;
-        int i = -1;
-        if(itIsMine) {
-            String command;
-            if (target == null) {
-                command = "MovM" + (int) newX + "-" + (int) newY;
-            } else {
-                command = "FolM" + (target instanceof Planet ? "P" : "M") + target.getID();
-            }
-            messageText = "From" + 1 + command + ":";
-        }
+    private void moveToPoint(float newX, float newY, SuperFigure target, boolean itIsMine){
         for(Mob mob: mobs){
-            if(mob.getIsSelected()){
-                if(itIsMine) {
-                    if (isFirst) {
-                        messageText += mob.getID();
-                        isFirst = false;
-                    } else {
-                        messageText += "," + mob.getID();
-                    }
-                    i++;
-                    selected[i] = mob.getID();
+            if(itIsMine) {
+                selectedID.add(mob.getID());
+                if (mob.getIsSelected()) {
+                    mob.setNextPosition(newX, newY, target);
                 }
-                mob.setNextPosition(newX, newY, target);
-            }
-        }
-        if(itIsMine) {
-            MovM movM = new MovM(newX, newY, selected);
-            System.out.println(messageText);
-        }
-        mobSelected = 0;
-    }
-
-    private void movePlanetToPoint(float newX, float newY, SuperFigure target, Boolean itIsMine){
-        int selected[] = new int[planetSelected];
-        int i = -1;
-        String command;
-        Boolean isFirst = true;
-        if(itIsMine) {
-            if (target == null) {
-                command = "MovP" + (int) newX + "-" + (int) newY;
             } else {
-                command = "FolP" + (target instanceof Planet ? "P" : "M") + target.getID();
+                if(selectedID.contains(mob.getID())){
+                    mob.setNextPosition(newX, newY,target);
+                }
             }
-            messageText = "From" + 1 + command + ":";
         }
         for(Planet planet: planets){
-            if(planet.getIsSelected()){
-                if(itIsMine) {
-                    if (isFirst) {
-                        messageText += planet.getID();
-                        isFirst = false;
-                    } else {
-                        messageText += "," + planet.getID();
-                    }
-                    i++;
-                    selected[i] = planet.getID();
+            if(itIsMine) {
+                selectedID.add(planet.getID());
+                if (planet.getIsSelected()) {
+                    planet.setNextPosition(newX, newY, target);
                 }
-                planet.setNextPosition(newX, newY, target);
+            } else {
+                if(selectedID.contains(planet.getID())){
+                    planet.setNextPosition(newX, newY,target);
+                }
             }
         }
-        if(itIsMine) {
-            System.out.println(messageText);
+        if(!itIsMine) {
+            selectedID.clear();
         }
-        planetSelected = 0;
+        isSelected = false;
     }
 
     /**
@@ -307,13 +245,10 @@ public class GameWorld {private PTGame game;
      */
     public void clickOnWorld(int screenX, int screenY) {
         screenY = (int) (game.getScreenHeight() - screenY);
-        Circle helpCircle = new Circle(screenX, screenY, 1);
+        Circle helpCircle = new Circle(screenX, screenY, 2);
         if(!checkOnTouch(helpCircle)){
-            if(mobSelected != 0) {
+            if(isSelected) {
                 moveToPoint(screenX, screenY, null, true);
-            }
-            if(planetSelected != 0){
-                movePlanetToPoint(screenX, screenY, null, true);
             }
         }
     }
@@ -322,40 +257,34 @@ public class GameWorld {private PTGame game;
      * Check on hit on object
      * @param helpCircle - help figure for detect on hit
      */
-    private Boolean checkOnTouch(Circle helpCircle){
-        Boolean isSelected = false;
+    private boolean checkOnTouch(Circle helpCircle){
+        boolean isSelect = false;
         for(Mob mob: mobs){
             if(mob.getFigure().overlaps(helpCircle)) {
-                isSelected = true;
-                if (mob.getHostName().equals(playerName)) {
-                    mobSelected++;
+                if (mob.getOwnerID() == playerID) {
+                    isSelected = true;
                     mob.setIsSelected(true);
                 } else {
-                    if (mobSelected != 0) {
+                    if (isSelected) {
                         moveToPoint(mob.getFigure().x, mob.getFigure().y, mob, true);
                     }
-                    if (planetSelected != 0) {
-                        movePlanetToPoint(mob.getFigure().x, mob.getFigure().y, mob, true);
-                    }
                 }
+                isSelect = true;
             }
         }
         for (Planet planet: planets){
             if(planet.getFigure().overlaps(helpCircle)){
-                isSelected = true;
-                if (planet.getHostName().equals(playerName)) {
-                    planetSelected++;
+                if (planet.getOwnerID() == playerID) {
+                    isSelected = true;
                     planet.setIsSelected(true);
                 } else{
-                    if(planetSelected != 0) {
-                        movePlanetToPoint(planet.getFigure().x, planet.getFigure().y, planet, true);
-                    }
-                    if(mobSelected != 0) {
+                    if(isSelected) {
                         moveToPoint(planet.getFigure().x, planet.getFigure().y, planet, true);
                     }
                 }
+                isSelect = true;
             }
         }
-        return isSelected;
+        return isSelect;
     }
 }

@@ -1,6 +1,7 @@
 package com.parabells.PTGameObjects;
 
 import com.badlogic.gdx.graphics.Color;
+import com.parabells.PTGameWorld.GameWorld;
 import com.parabells.PTHelpers.Circle;
 
 /**
@@ -11,10 +12,9 @@ public class SuperFigure {
     private float stepX, stepY;
     private float newX, newY;
     private SuperFigure target;
-    private String hostName;
-    private Boolean isSelected;
-    private Boolean isMove;
-    private Color color;
+    private int ownerID;
+    private boolean isSelected;
+    private boolean isMove;
     public int ID;
 
     /**
@@ -22,15 +22,18 @@ public class SuperFigure {
      * @param x - xPosition
      * @param y - yPosition
      * @param radius - radius
-     * @param hostName - player who owns the object
+     * @param ownerID - player who owns the object
      */
-    public SuperFigure(int ID, float x, float y, float radius, String hostName, Color color){
+    public SuperFigure(int ID, float x, float y, float radius, int ownerID){
         this.ID = ID;
-        this.color = color;
+        this.ownerID = ownerID;
         figure = new Circle(x, y, radius);
         isSelected = false;
         isMove = false;
-        this.hostName = hostName;
+    }
+
+    public void update(GameWorld gameWorld, float delta){
+        moving();
     }
 
     /**
@@ -75,27 +78,19 @@ public class SuperFigure {
         return figure;
     }
 
-    /**
-     * Getter for player's name
-     * @return - player's name
-     */
-    public String getHostName() {
-        return hostName;
+    public int getOwnerID() {
+        return ownerID;
     }
 
-    /**
-     * Setter for player's name
-     * @param hostName - player's name
-     */
-    public void setHostName(String hostName) {
-        this.hostName = hostName;
+    public void setOwnerID(int ownerID) {
+        this.ownerID = ownerID;
     }
 
     /**
      * Setter for isSelelcted
      * @param isSelected - if an object is selected
      */
-    public void setIsSelected(Boolean isSelected) {
+    public void setIsSelected(boolean isSelected) {
         this.isSelected = isSelected;
     }
 
@@ -103,7 +98,7 @@ public class SuperFigure {
      * Getter for isSelected
      * @return - if an object is selected
      */
-    public Boolean getIsSelected() {
+    public boolean getIsSelected() {
         return isSelected;
     }
 
@@ -143,7 +138,7 @@ public class SuperFigure {
      * Getter for isMove
      * @return - true if moving
      */
-    public Boolean getIsMove() {
+    public boolean getIsMove() {
         return isMove;
     }
 
@@ -151,7 +146,7 @@ public class SuperFigure {
      * Setter for isMove
      * @param isMove - move or not move
      */
-    public void setIsMove(Boolean isMove) {
+    public void setIsMove(boolean isMove) {
         this.isMove = isMove;
     }
 
@@ -211,11 +206,4 @@ public class SuperFigure {
         return ID;
     }
 
-    public Color getColor() {
-        return color;
-    }
-
-    public void setColor(Color color) {
-        this.color = color;
-    }
 }

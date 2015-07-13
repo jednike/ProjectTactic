@@ -1,6 +1,8 @@
 package com.parabells.PTGameObjects;
 
 import com.badlogic.gdx.graphics.Color;
+import com.parabells.PTGameWorld.GameWorld;
+import com.parabells.PTHelpers.Utils;
 
 /**
  * Class for planet
@@ -8,20 +10,57 @@ import com.badlogic.gdx.graphics.Color;
 public class Planet extends SuperFigure{
     private float timeToControl;
     private float timeToRespawn;
-    private int numberMobs;
+    private int invader;
+    private boolean isNewOwner;
+    private boolean isNewMobRespawn;
 
     /**
      * Constructor
      * @param x - xPosition
      * @param y - yPosition
      * @param radius - radius
-     * @param hostName - player who owns the object
+     * @param ownerID - player who owns the object
      */
-    public Planet(int ID, float x, float y, float radius, float timeToControl, float timeToRespawn, int numberMobs, String hostName,  Color color) {
-        super(ID, x, y, radius, hostName, color);
+    public Planet(int ID, float x, float y, float radius, float timeToControl, float timeToRespawn, int ownerID) {
+        super(ID, x, y, radius, ownerID);
         this.timeToControl = timeToControl;
         this.timeToRespawn = timeToRespawn;
-        this.numberMobs = numberMobs;
+        isNewMobRespawn = false;
+        isNewOwner = false;
+    }
+
+    @Override
+    public void update(GameWorld gameWorld, float delta) {
+        if (getOwnerID() != Utils.NEUTRAL_OWNER_ID) {
+            if (timeToRespawn >= 0) {
+                timeToRespawn -= delta;
+            } else {
+                isNewMobRespawn = true;
+                timeToRespawn = gameWorld.getTimeToRespawn();
+            }
+        }
+        if (invader != Utils.NEUTRAL_OWNER_ID) {
+            if (getOwnerID() != Utils.NEUTRAL_OWNER_ID) {
+                if (timeToControl >= 0) {
+                    timeToControl -= delta;
+                } else {
+                    setIsMove(false);
+                    isNewOwner = true;
+                    setOwnerID(Utils.NEUTRAL_OWNER_ID);
+                    timeToControl = gameWorld.getTimeToControl();
+                }
+            } else {
+                if (getTimeToControl() >= 0) {
+                    timeToControl -= delta;
+                } else {
+                    setOwnerID(invader);
+                    isNewOwner = false;
+                    timeToControl = gameWorld.getTimeToControl();
+                }
+            }
+        }
+
+        super.update(gameWorld, delta);
     }
 
     /**
@@ -56,19 +95,15 @@ public class Planet extends SuperFigure{
         this.timeToRespawn = timeToRespawn;
     }
 
-    /**
-     * Getter for numbers mobs near planet
-     * @return - number mobs near planet
-     */
-    public int getNumberMobs() {
-        return numberMobs;
+    public boolean isNewMobRespawn() {
+        return isNewMobRespawn;
     }
 
-    /**
-     * Setter for numbers mobs near planet
-     * @param numberMobs - numbers mobs near planet
-     */
-    public void setNumberMobs(int numberMobs) {
-        this.numberMobs = numberMobs;
+    public void setInvader(int invader) {
+        this.invader = invader;
+    }
+
+    public boolean isNewOwner() {
+        return isNewOwner;
     }
 }

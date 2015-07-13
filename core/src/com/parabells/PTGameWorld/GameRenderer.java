@@ -41,11 +41,9 @@ public class GameRenderer {
         Gdx.gl20.glClear(GL20.GL_COLOR_BUFFER_BIT);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for(Planet planet: gameWorld.getPlanets()){
-            shapeRenderer.setColor(planet.getColor());
             shapeRenderer.circle(planet.getFigure().x, planet.getFigure().y, planet.getFigure().radius);
         }
         for(Mob mob: gameWorld.getMobs()){
-            shapeRenderer.setColor(mob.getColor());
             shapeRenderer.circle(mob.getFigure().x, mob.getFigure().y, mob.getFigure().radius);
         }
 
