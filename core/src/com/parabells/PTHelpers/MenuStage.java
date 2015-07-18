@@ -9,6 +9,8 @@ import com.parabells.PTGame.PTGame;
 import com.parabells.PTScreens.GameScreen;
 import com.parabells.PTScreens.MenuScreen;
 
+import java.io.IOException;
+
 public class MenuStage extends Stage {
     private PTGame game;
 
@@ -54,9 +56,13 @@ public class MenuStage extends Stage {
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                    game.currentState = PTGame.GameState.RUNNING;
+                    game.currentState = PTGame.GameState.CONNECTION;
+                try {
                     game.setScreen(new GameScreen(game));
-                    dispose();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                dispose();
             }
         });
         this.addActor(startButton);

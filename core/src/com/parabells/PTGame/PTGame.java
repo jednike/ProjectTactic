@@ -6,8 +6,14 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.parabells.PTScreens.GameScreen;
+import com.badlogic.gdx.utils.Json;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.parabells.PTClient.Client;
 import com.parabells.PTScreens.MenuScreen;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Super game class
@@ -16,9 +22,13 @@ import com.parabells.PTScreens.MenuScreen;
 public class PTGame extends Game {
 	private float screenWidth, screenHeight;
 	private float relative;
+	private Queue<String> inputQueue = new LinkedList<String>();
+	private Queue<String> outputQueue = new LinkedList<String>();
 	private TextureAtlas buttonAtlas;
 	private Skin skin;
+	private Client client;
 
+	public Gson json;
 	/**
 	 * Game state's
 	 */
@@ -41,6 +51,7 @@ public class PTGame extends Game {
 		relative = screenWidth/screenHeight;
 		buttonAtlas = new TextureAtlas(Gdx.files.internal("buttons/buttons.pack"));
 		skin = new Skin(buttonAtlas);
+		json = new GsonBuilder().setPrettyPrinting().create();
 		setScreen(new MenuScreen(this));
 	}
 
@@ -66,6 +77,26 @@ public class PTGame extends Game {
 		return imageButtonStyle;
 	}
 
+	public void addToInputQueue(String command){
+		if (command!=null && !command.isEmpty()){
+			inputQueue.add(command);
+		}
+	}
+
+	public Queue<String> getInputQueue() {
+		return inputQueue;
+	}
+
+	public void addToOutputQueue(String command){
+		if (command!=null && !command.isEmpty()){
+			outputQueue.add(command);
+		}
+	}
+
+	public Queue<String> getOutputQueue() {
+		return outputQueue;
+	}
+
 	/**
 	 * Screen height
 	 * @return - screen height
@@ -80,5 +111,13 @@ public class PTGame extends Game {
 	 */
 	public float getScreenWidth() {
 		return screenWidth;
+	}
+
+	public Client getClient() {
+		return client;
+	}
+
+	public void setClient(Client client) {
+		this.client = client;
 	}
 }

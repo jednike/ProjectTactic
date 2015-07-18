@@ -31,35 +31,6 @@ public class Planet extends SuperFigure{
 
     @Override
     public void update(GameWorld gameWorld, float delta) {
-        if (getOwnerID() != Utils.NEUTRAL_OWNER_ID) {
-            if (timeToRespawn >= 0) {
-                timeToRespawn -= delta;
-            } else {
-                isNewMobRespawn = true;
-                timeToRespawn = gameWorld.getTimeToRespawn();
-            }
-        }
-        if (invader != Utils.NEUTRAL_OWNER_ID) {
-            if (getOwnerID() != Utils.NEUTRAL_OWNER_ID) {
-                if (timeToControl >= 0) {
-                    timeToControl -= delta;
-                } else {
-                    setIsMove(false);
-                    isNewOwner = true;
-                    setOwnerID(Utils.NEUTRAL_OWNER_ID);
-                    timeToControl = gameWorld.getTimeToControl();
-                }
-            } else {
-                if (getTimeToControl() >= 0) {
-                    timeToControl -= delta;
-                } else {
-                    setOwnerID(invader);
-                    isNewOwner = false;
-                    timeToControl = gameWorld.getTimeToControl();
-                }
-            }
-        }
-
         super.update(gameWorld, delta);
     }
 

@@ -34,19 +34,6 @@ public class Mob extends SuperFigure {
 
     @Override
     public void update(GameWorld gameWorld, float delta) {
-        if(reloadTime >= 0){
-            reloadTime -= delta;
-        } else{
-            for(Mob attackMob: gameWorld.getMobs()){
-                if(attackMob.getFigure().overlaps(new Circle(getFigure().x, getFigure().y, getAtackRadius())) && attackMob.getOwnerID() != getOwnerID()) {
-                    attackMob.setHP(attackMob.getHP() - getDamage());
-                    reloadTime = gameWorld.getReloadTime();
-                    if(attackMob.getHP() < 0){
-                        attackMob.setRemove(true);
-                    }
-                }
-            }
-        }
         super.update(gameWorld, delta);
     }
 

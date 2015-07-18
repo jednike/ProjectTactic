@@ -90,6 +90,9 @@ project(":core") {
 
     dependencies {
         compile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        compile "org.codehaus.jackson:jackson-core-asl:1.9.13"
+        compile "com.google.code.gson:gson:2.3.1"
+
     }
 }
 
