@@ -1,9 +1,7 @@
 package com.parabells.PTGameWorld;
 
-import com.badlogic.gdx.math.Vector2;
 import com.parabells.PTClient.CommandHandler;
 import com.parabells.PTClient.DefaultCommand;
-import com.parabells.PTClient.Delt;
 import com.parabells.PTClient.DeltHandler;
 import com.parabells.PTClient.Move;
 import com.parabells.PTClient.MoveHandler;
@@ -12,23 +10,18 @@ import com.parabells.PTClient.Setp;
 import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameObjects.Mob;
 import com.parabells.PTGameObjects.Planet;
-import com.parabells.PTGameObjects.SuperFigure;
 import com.parabells.PTHelpers.Circle;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 
 /**
  * Base game methods class
  */
 public class GameWorld {private PTGame game;
-    private Stack<Vector2> bulletFrom, bulletTo;
-    private ArrayList<Planet> planets, deltPlanets;
-    private ArrayList<Mob> mobs, deltMobs;
+    private Map<Integer, Planet> planets, deltPlanets;
+    private Map<Integer, Mob> mobs, deltMobs;
     private ArrayList<Integer> selectedID;
     private Map<String,CommandHandler> commandHandlers = new HashMap<String, CommandHandler>();
     private DefaultCommand command;
@@ -41,10 +34,8 @@ public class GameWorld {private PTGame game;
      */
     public GameWorld(PTGame game){
         this.game = game;
-        bulletFrom = new Stack<Vector2>();
-        bulletTo = new Stack<Vector2>();
-        deltMobs = new ArrayList<Mob>();
-        deltPlanets = new ArrayList<Planet>();
+        deltMobs = new HashMap<Integer, Mob>();
+        deltPlanets = new HashMap<Integer, Planet>();
         selectedID = new ArrayList<Integer>();
         isSelected = false;
 
@@ -69,7 +60,7 @@ public class GameWorld {private PTGame game;
      * Getter for stack's mob
      * @return - stack's mob(for render)
      */
-    public List<Mob> getMobs() {
+    public Map<Integer, Mob> getMobs() {
         return mobs;
     }
 
@@ -77,7 +68,7 @@ public class GameWorld {private PTGame game;
      * Getter for stack planets
      * @return - stack's planets(for render)
      */
-    public List<Planet> getPlanets() {
+    public Map<Integer, Planet> getPlanets() {
         return planets;
     }
 
@@ -99,107 +90,71 @@ public class GameWorld {private PTGame game;
             game.getClient().getOut().println(game.getOutputQueue().poll());
         }
 
-        for (Planet planet : planets) {
-            if(!deltPlanets.isEmpty()){
-                Iterator<Planet> iter = deltPlanets.iterator();
-                while (iter.hasNext()) {
-                    Planet deltPlanet = iter.next();
-                    if (planet.getID() == deltPlanet.getID()){
-                        planet = deltPlanet;
-                        iter.remove();
-                    }
-                }
+        for(Map.Entry<Integer, Planet> planet: planets.entrySet()){
+            if(deltPlanets.containsKey(planet.getKey())){
+                planet.setValue(deltPlanets.get(planet.getKey()));
+                deltPlanets.remove(planet.getKey());
             }
-            planet.update(this, delta);
+            planet.getValue().update(this, delta);
         }
-        for (Planet deltPlanet: deltPlanets){
-            planets.add(deltPlanet);
-        }
+        planets.putAll(deltPlanets);
         deltPlanets.clear();
 
-        Iterator<Mob> iter = mobs.iterator();
-        while (iter.hasNext()) {
-            Mob mob = iter.next();
-            if(!deltMobs.isEmpty()){
-                Iterator<Mob> iterator = deltMobs.iterator();
-                while (iterator.hasNext()) {
-                    Mob deltMob = iterator.next();
-                    if (mob.getID() == deltMob.getID()){
-                        mob = deltMob;
-                        iterator.remove();
-                    }
-                }
+        for(Map.Entry<Integer, Mob> mob: mobs.entrySet()){
+            if(deltMobs.containsKey(mob.getKey())) {
+                mob.setValue(deltMobs.get(mob.getKey()));
+                deltMobs.remove(mob.getKey());
             }
-            if(mob.isRemove()){
-                iter.remove();
+            if(mob.getValue().isRemove()){
+                mobs.remove(mob.getKey());
             } else {
-                mob.update(this, delta);
+                mob.getValue().update(this, delta);
             }
         }
-        for (Mob deltMob: deltMobs){
-            mobs.add(deltMob);
-        }
+        mobs.putAll(deltMobs);
         deltMobs.clear();
-    }
-
-    /**
-     * Getter for mass shot(start)
-     * @return - mass shot
-     */
-    public Stack<Vector2> getBulletFrom() {
-        return bulletFrom;
-    }
-
-    /**
-     * Getter for mass shot(end)
-     * @return - mass shot
-     */
-    public Stack<Vector2> getBulletTo() {
-        return bulletTo;
     }
 
     /**
      * Move object to free point or follow for target
      * @param newX - target position x
      * @param newY - target position y
-     * @param target - target
+     * @param targetID - target
      */
-    public void moveToPoint(float newX, float newY, SuperFigure target, boolean itIsMine){
-        for(Mob mob: mobs){
-            if(itIsMine) {
-                if (mob.getIsSelected()) {
-                    selectedID.add(mob.getID());
-                    mob.setNextPosition(newX, newY, target);
-                }
-            } else {
-                if(selectedID.contains(mob.getID())){
-                    mob.setIsSelected(true);
-                    mob.setNextPosition(newX, newY,target);
+    public void moveToPoint(float newX, float newY, int targetID, boolean itIsMine) {
+        if (!itIsMine) {
+            for (Integer id : selectedID) {
+                if (mobs.containsKey(id)) {
+                    mobs.get(id).setIsSelected(true);
+                    mobs.get(id).setNextPosition(newX, newY, targetID);
+                } else if (planets.containsKey(id)) {
+                    planets.get(id).setIsSelected(true);
+                    planets.get(id).setNextPosition(newX, newY, targetID);
                 }
             }
-        }
-        for(Planet planet: planets){
-            if(itIsMine) {
-                if (planet.getIsSelected()) {
-                    selectedID.add(planet.getID());
-                    planet.setNextPosition(newX, newY, target);
-                }
-            } else {
-                if(selectedID.contains(planet.getID())){
-                    planet.setIsSelected(true);
-                    planet.setNextPosition(newX, newY,target);
+        } else {
+            for (Map.Entry<Integer, Mob> mob : mobs.entrySet()) {
+                if (mob.getValue().getIsSelected()) {
+                    selectedID.add(mob.getKey());
+                    mob.getValue().setNextPosition(newX, newY, targetID);
                 }
             }
-        }
-        if(itIsMine) {
-            command = new Move(newX, newY, target, selectedID);
+            for (Map.Entry<Integer, Planet> planet : planets.entrySet()) {
+                if (planet.getValue().getIsSelected()) {
+                    selectedID.add(planet.getKey());
+                    planet.getValue().setNextPosition(newX, newY, targetID);
+                }
+            }
+
+            command = new Move(newX, newY, targetID, selectedID);
             String temp = game.json.toJson(command);
 
             temp = temp.replaceAll("\n", "");
             temp = temp.replaceAll(" ", "");
             game.addToOutputQueue(temp);
-            selectedID.clear();
             isSelected = false;
+
+            selectedID.clear();
         }
     }
 
@@ -217,7 +172,7 @@ public class GameWorld {private PTGame game;
         Circle helpCircle = new Circle(screenX, screenY, 2);
         if(!checkOnTouch(helpCircle)){
             if(isSelected) {
-                moveToPoint(screenX, screenY, null, true);
+                moveToPoint(screenX, screenY, -1, true);
             }
         }
     }
@@ -228,27 +183,27 @@ public class GameWorld {private PTGame game;
      */
     private boolean checkOnTouch(Circle helpCircle){
         boolean isSelect = false;
-        for(Mob mob: mobs){
-            if(mob.getFigure().overlaps(helpCircle)) {
-                if (mob.getOwnerID() == playerID) {
+        for(Map.Entry<Integer, Mob> mob: mobs.entrySet()){
+            if(mob.getValue().getFigure().overlaps(helpCircle)) {
+                if (mob.getValue().getOwnerID() == playerID) {
                     isSelected = true;
-                    mob.setIsSelected(true);
+                    mob.getValue().setIsSelected(true);
                 } else {
                     if (isSelected) {
-                        moveToPoint(mob.getFigure().x, mob.getFigure().y, mob, true);
+                        moveToPoint(mob.getValue().getFigure().x, mob.getValue().getFigure().y, mob.getKey(), true);
                     }
                 }
                 isSelect = true;
             }
         }
-        for (Planet planet: planets){
-            if(planet.getFigure().overlaps(helpCircle)){
-                if (planet.getOwnerID() == playerID) {
+        for (Map.Entry<Integer, Planet> planet: planets.entrySet()){
+            if(planet.getValue().getFigure().overlaps(helpCircle)){
+                if (planet.getValue().getOwnerID() == playerID) {
                     isSelected = true;
-                    planet.setIsSelected(true);
+                    planet.getValue().setIsSelected(true);
                 } else{
                     if(isSelected) {
-                        moveToPoint(planet.getFigure().x, planet.getFigure().y, planet, true);
+                        moveToPoint(planet.getValue().getFigure().x, planet.getValue().getFigure().y, planet.getKey(), true);
                     }
                 }
                 isSelect = true;
@@ -257,11 +212,11 @@ public class GameWorld {private PTGame game;
         return isSelect;
     }
 
-    public void setDeltMobs(ArrayList<Mob> deltMobs) {
+    public void setDeltMobs(Map<Integer, Mob> deltMobs) {
         this.deltMobs = deltMobs;
     }
 
-    public void setDeltPlanets(ArrayList<Planet> deltPlanets) {
+    public void setDeltPlanets(Map<Integer, Planet> deltPlanets) {
         this.deltPlanets = deltPlanets;
     }
 }

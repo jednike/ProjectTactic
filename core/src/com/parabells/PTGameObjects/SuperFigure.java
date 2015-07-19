@@ -1,6 +1,5 @@
 package com.parabells.PTGameObjects;
 
-import com.badlogic.gdx.graphics.Color;
 import com.parabells.PTGameWorld.GameWorld;
 import com.parabells.PTHelpers.Circle;
 
@@ -11,11 +10,10 @@ public class SuperFigure {
     private Circle figure;
     private float stepX, stepY;
     private float newX, newY;
-    private SuperFigure target;
+    private int targetID;
     private int ownerID;
     private boolean isSelected;
     private boolean isMove;
-    public int ID;
 
     /**
      * Constructor
@@ -24,47 +22,44 @@ public class SuperFigure {
      * @param radius - radius
      * @param ownerID - player who owns the object
      */
-    public SuperFigure(int ID, float x, float y, float radius, int ownerID){
-        this.ID = ID;
+    public SuperFigure(float x, float y, float radius, int ownerID){
         this.ownerID = ownerID;
         figure = new Circle(x, y, radius);
         isSelected = false;
         isMove = false;
+        targetID = -1;
     }
 
     public void update(GameWorld gameWorld, float delta){
-        moving();
-    }
-
-    /**
-     * Method for moving to target
-     */
-    public void moving() {
         if (isMove) {
-            if(target == null) {
+            if(targetID == -1) {
                 if (!figure.overlaps(new Circle(newX, newY, figure.radius))) {
                     figure.x += stepX;
                     figure.y += stepY;
+                } else {
+                    isMove = false;
                 }
             } else {
-                if (!figure.overlaps(target.getFigure())) {
-                    figure.x += (target.getFigure().x - figure.x)/200;
-                    figure.y += (target.getFigure().y - figure.y)/200;
+                Circle targetFigure = gameWorld.getPlanets().containsKey(targetID)?gameWorld.getPlanets().get(targetID).getFigure():gameWorld.getMobs().get(targetID).getFigure();
+                if (!figure.overlaps(targetFigure)) {
+                    figure.x += (targetFigure.x - figure.x)/200;
+                    figure.y += (targetFigure.y - figure.y)/200;
                 }
             }
         }
     }
 
-    public void setNextPosition(float newX, float newY, SuperFigure target){
+    public void setNextPosition(float newX, float newY, int targetID){
         if(isSelected){
             stepX = (newX - figure.x)/200;
             stepY = (newY - figure.y)/200;
             isSelected = false;
-            if(target == null) {
+            this.targetID = targetID;
+            if(targetID == -1) {
                 this.newX = newX;
                 this.newY = newY;
             } else {
-                this.target = target;
+                this.targetID = targetID;
             }
             isMove = true;
         }
@@ -184,26 +179,17 @@ public class SuperFigure {
 
     /**
      * Setter for new target
-     * @param target - new target
+     * @param targetID - new target
      */
-    public void setTarget(SuperFigure target) {
-        this.target = target;
+    public void setTargetID(int targetID) {
+        this.targetID = targetID;
     }
 
     /**
      * Getter for current target
      * @return - current target
      */
-    public SuperFigure getTarget() {
-        return target;
+    public int getTargetID() {
+        return targetID;
     }
-
-    /**
-     * Getter for ID
-     * @return - ID
-     */
-    public int getID() {
-        return ID;
-    }
-
 }

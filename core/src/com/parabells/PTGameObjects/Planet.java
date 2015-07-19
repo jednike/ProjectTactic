@@ -21,8 +21,8 @@ public class Planet extends SuperFigure{
      * @param radius - radius
      * @param ownerID - player who owns the object
      */
-    public Planet(int ID, float x, float y, float radius, float timeToControl, float timeToRespawn, int ownerID) {
-        super(ID, x, y, radius, ownerID);
+    public Planet(float x, float y, float radius, float timeToControl, float timeToRespawn, int ownerID) {
+        super(x, y, radius, ownerID);
         this.timeToControl = timeToControl;
         this.timeToRespawn = timeToRespawn;
         isNewMobRespawn = false;

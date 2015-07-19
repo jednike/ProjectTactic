@@ -4,13 +4,14 @@ import com.parabells.PTGameObjects.Mob;
 import com.parabells.PTGameObjects.Planet;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class Setp extends DefaultCommand{
-	public ArrayList<Mob> mobs;
-	public ArrayList<Planet> planets;
+	public Map<Integer, Mob> mobs;
+	public Map<Integer, Planet> planets;
 	public int receiverID;
 
-	public Setp(ArrayList<Mob> mobs, ArrayList<Planet> planets, int receiverID){
+	public Setp(Map<Integer, Mob> mobs, Map<Integer, Planet> planets, int receiverID){
 		name ="Setp";
 		this.planets = planets;
 		this.mobs = mobs;

@@ -16,6 +16,7 @@ public class Mob extends SuperFigure {
     private float reloadTime;
     private float atackRadius;
     private boolean isRemove;
+    private int atackedMob;
 
     /**
      * Constructor
@@ -25,8 +26,8 @@ public class Mob extends SuperFigure {
      * @param HP - HP's mob
      * @param ownerID - owner id
      */
-    public Mob(int ID, float x, float y, float radius, float HP, float reloadTime, float atackRadius, float damage, int ownerID) {
-        super(ID, x, y, radius, ownerID);
+    public Mob(float x, float y, float radius, float HP, float reloadTime, float atackRadius, float damage, int ownerID) {
+        super(x, y, radius, ownerID);
         this.HP = HP;
         this.damage = damage;
         this.atackRadius = atackRadius;
@@ -91,5 +92,9 @@ public class Mob extends SuperFigure {
 
     public boolean isRemove() {
         return isRemove;
+    }
+
+    public int getAtackedMob() {
+        return atackedMob;
     }
 }

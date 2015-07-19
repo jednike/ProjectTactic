@@ -14,6 +14,6 @@ public class MoveHandler extends CommandHandler {
 		Move command = game.json.fromJson(text, Move.class);
 
 		gameWorld.setSelectedID(command.mobs);
-		gameWorld.moveToPoint(command.x, command.y, command.superFigure, false);
+		gameWorld.moveToPoint(command.x, command.y, command.targetID, false);
 	}
 }
