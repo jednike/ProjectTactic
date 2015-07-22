@@ -15,6 +15,7 @@ public class Client implements Runnable{
     private Socket fromserver;
     private PrintWriter out;
     private PTGame game;
+    private String IPAdress = "31.148.52.191";
 
     public Client(PTGame game){
         this.game = game;
@@ -29,7 +30,6 @@ public class Client implements Runnable{
     }
 
     private void init() throws IOException{
-        String IPAdress = "109.120.41.202";
         fuser = "";
         fromserver = new Socket(InetAddress.getLocalHost(), 7070);
 

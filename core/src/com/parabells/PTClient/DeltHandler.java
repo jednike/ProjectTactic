@@ -12,7 +12,5 @@ public class DeltHandler extends CommandHandler {
     @Override
     public void Handle(String text){
         Delt command = game.json.fromJson(text, Delt.class);
-        gameWorld.setDeltMobs(command.mobs);
-        gameWorld.setDeltPlanets(command.planets);
     }
 }

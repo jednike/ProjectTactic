@@ -34,46 +34,6 @@ public class Planet extends SuperFigure{
         super.update(gameWorld, delta);
     }
 
-    /**
-     * Time for grab planet
-     * @return - left time
-     */
-    public float getTimeToControl() {
-        return timeToControl;
-    }
-
-    /**
-     * Time for grab planet
-     * @param timeToControl - time to grab
-     */
-    public void setTimeToControl(float timeToControl) {
-        this.timeToControl = timeToControl;
-    }
-
-    /**
-     * Getter for time of respawn mob on planet
-     * @return - time of respawn
-     */
-    public float getTimeToRespawn() {
-        return timeToRespawn;
-    }
-
-    /**
-     * Setter for time of respawn mob on planet
-     * @param timeToRespawn - new time of respawn
-     */
-    public void setTimeToRespawn(float timeToRespawn) {
-        this.timeToRespawn = timeToRespawn;
-    }
-
-    public boolean isNewMobRespawn() {
-        return isNewMobRespawn;
-    }
-
-    public void setInvader(int invader) {
-        this.invader = invader;
-    }
-
     public boolean isNewOwner() {
         return isNewOwner;
     }

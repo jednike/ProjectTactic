@@ -45,8 +45,13 @@ public class GameRenderer {
         for(Planet planet: gameWorld.getPlanets().values()){
             if(planet.getOwnerID() == 1){
                 color = Color.GREEN;
+            }  else if(planet.getOwnerID() == Utils.NEUTRAL_OWNER_ID){
+                color = Color.BLUE;
             } else{
                 color = Color.RED;
+            }
+            if(planet.getOwnerID() == gameWorld.getPlayerID() && planet.getIsSelected()){
+                color = Color.ORANGE;
             }
             shapeRenderer.setColor(color);
             shapeRenderer.circle(planet.getFigure().x, planet.getFigure().y, planet.getFigure().radius);
@@ -54,13 +59,15 @@ public class GameRenderer {
         for(Mob mob: gameWorld.getMobs().values()) {
             if(mob.getOwnerID() == 1){
                 color = Color.GREEN;
-            } else if(mob.getOwnerID() == Utils.NEUTRAL_OWNER_ID){
-                color = Color.BLUE;
             } else if(mob.getOwnerID() == 2){
                 color = Color.RED;
             }
-            if(mob.getAtackedMob() != -1){
-                shapeRenderer.rectLine(mob.getFigure().x, mob.getFigure().y, gameWorld.getMobs().get(mob.getAtackedMob()).getFigure().x, gameWorld.getMobs().get(mob.getAtackedMob()).getFigure().y, 5);
+            if(mob.getOwnerID() == gameWorld.getPlayerID() && mob.getIsSelected()){
+                color = Color.ORANGE;
+            }
+            if(mob.getAttackedMob() != -1 && gameWorld.getMobs().containsKey(mob.getAttackedMob())){
+                shapeRenderer.rectLine(mob.getFigure().getPosition(), gameWorld.getMobs().get(mob.getAttackedMob()).getFigure().getPosition(), 5);
+                mob.setAttackedMob(-1);
             }
             shapeRenderer.setColor(color);
             shapeRenderer.circle(mob.getFigure().x, mob.getFigure().y, mob.getFigure().radius);

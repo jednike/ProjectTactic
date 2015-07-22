@@ -1,11 +1,15 @@
 package com.parabells.PTGameWorld;
 
+import com.parabells.PTClient.AddHandler;
+import com.parabells.PTClient.AttackHandler;
 import com.parabells.PTClient.CommandHandler;
 import com.parabells.PTClient.DefaultCommand;
 import com.parabells.PTClient.DeltHandler;
 import com.parabells.PTClient.Move;
 import com.parabells.PTClient.MoveHandler;
+import com.parabells.PTClient.NewOwnerHandler;
 import com.parabells.PTClient.PingHandler;
+import com.parabells.PTClient.RemoveHandler;
 import com.parabells.PTClient.Setp;
 import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameObjects.Mob;
@@ -20,8 +24,8 @@ import java.util.Map;
  * Base game methods class
  */
 public class GameWorld {private PTGame game;
-    private Map<Integer, Planet> planets, deltPlanets;
-    private Map<Integer, Mob> mobs, deltMobs;
+    private Map<Integer, Planet> planets;
+    private Map<Integer, Mob> mobs;
     private ArrayList<Integer> selectedID;
     private Map<String,CommandHandler> commandHandlers = new HashMap<String, CommandHandler>();
     private DefaultCommand command;
@@ -34,19 +38,22 @@ public class GameWorld {private PTGame game;
      */
     public GameWorld(PTGame game){
         this.game = game;
-        deltMobs = new HashMap<Integer, Mob>();
-        deltPlanets = new HashMap<Integer, Planet>();
         selectedID = new ArrayList<Integer>();
         isSelected = false;
 
         commandHandlers.put("Move", new MoveHandler(game, this));
+        commandHandlers.put("Attack", new AttackHandler(game, this));
         commandHandlers.put("Delt", new DeltHandler(game, this));
         commandHandlers.put("Ping", new PingHandler(game, this));
+        commandHandlers.put("Add", new AddHandler(game, this));
+        commandHandlers.put("Remove", new RemoveHandler(game, this));
+        commandHandlers.put("NewOwner", new NewOwnerHandler(game, this));
+
         startGame();
     }
 
     /**
-     * Start actions(Server part!)
+     * Start actions
      */
     private void startGame(){
         String input = game.getInputQueue().poll();
@@ -77,7 +84,7 @@ public class GameWorld {private PTGame game;
      * @param delta - delta time
      */
     public void update(float delta) {
-        if (!game.getInputQueue().isEmpty()){
+        while (!game.getInputQueue().isEmpty()){
             String input = game.getInputQueue().poll();
             command = game.json.fromJson(input, DefaultCommand.class);
 
@@ -91,28 +98,11 @@ public class GameWorld {private PTGame game;
         }
 
         for(Map.Entry<Integer, Planet> planet: planets.entrySet()){
-            if(deltPlanets.containsKey(planet.getKey())){
-                planet.setValue(deltPlanets.get(planet.getKey()));
-                deltPlanets.remove(planet.getKey());
-            }
             planet.getValue().update(this, delta);
         }
-        planets.putAll(deltPlanets);
-        deltPlanets.clear();
-
         for(Map.Entry<Integer, Mob> mob: mobs.entrySet()){
-            if(deltMobs.containsKey(mob.getKey())) {
-                mob.setValue(deltMobs.get(mob.getKey()));
-                deltMobs.remove(mob.getKey());
-            }
-            if(mob.getValue().isRemove()){
-                mobs.remove(mob.getKey());
-            } else {
-                mob.getValue().update(this, delta);
-            }
+            mob.getValue().update(this, delta);
         }
-        mobs.putAll(deltMobs);
-        deltMobs.clear();
     }
 
     /**
@@ -153,9 +143,12 @@ public class GameWorld {private PTGame game;
             temp = temp.replaceAll(" ", "");
             game.addToOutputQueue(temp);
             isSelected = false;
-
-            selectedID.clear();
         }
+        selectedID.clear();
+    }
+
+    public int getPlayerID() {
+        return playerID;
     }
 
     public void setSelectedID(ArrayList<Integer> selectedID) {
@@ -212,11 +205,19 @@ public class GameWorld {private PTGame game;
         return isSelect;
     }
 
-    public void setDeltMobs(Map<Integer, Mob> deltMobs) {
-        this.deltMobs = deltMobs;
+    public void addNewObject(int id, float x, float y, float radius, int ownerID) {
+        if(id < 50){
+            planets.put(id, new Planet(x, y, radius, -1, -1, ownerID));
+        } else{
+            mobs.put(id, new Mob(x, y, radius, -1, -1, -1, -1, ownerID));
+        }
     }
 
-    public void setDeltPlanets(Map<Integer, Planet> deltPlanets) {
-        this.deltPlanets = deltPlanets;
+    public void removeObject(int id) {
+        if(planets.containsKey(id)){
+            planets.remove(id);
+        } else if(mobs.containsKey(id)){
+            mobs.remove(id);
+        }
     }
 }

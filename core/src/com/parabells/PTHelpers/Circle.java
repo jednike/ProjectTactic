@@ -173,6 +173,10 @@ public class Circle implements Serializable {
         return distance < radiusSum * radiusSum;
     }
 
+    public Vector2 getPosition(){
+        return new Vector2(x, y);
+    }
+
     /** Returns a {@link String} representation of this {@link Circle} of the form {@code x,y,radius}. */
     @Override
     public String toString () {
