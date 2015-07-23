@@ -8,7 +8,6 @@ import com.parabells.PTHelpers.Circle;
  */
 public class SuperFigure {
     private Circle figure;
-    private float stepX, stepY;
     private float newX, newY;
     private int targetID;
     private int ownerID;
@@ -31,19 +30,37 @@ public class SuperFigure {
     }
 
     public void update(GameWorld gameWorld, float delta){
+        for(Mob mob: gameWorld.getMobs().values()) {
+            if(mob != this && figure.overlaps(mob.getFigure())){
+                if(mob.getOwnerID() == ownerID){
+                    if(mob.getFigure().x > figure.x){
+                        mob.getFigure().x++;
+                    } else if(mob.getFigure().x < figure.x){
+                        mob.getFigure().x--;
+                    }
+                    if(mob.getFigure().y > figure.y){
+                        mob.getFigure().y++;
+                    } else if(mob.getFigure().y < figure.y){
+                        mob.getFigure().y--;
+                    }
+                }
+            }
+        }
         if (isMove) {
             if(targetID == -1) {
-                if (!figure.overlaps(new Circle(newX, newY, figure.radius))) {
-                    figure.x += stepX;
-                    figure.y += stepY;
+                if (!figure.overlaps(new Circle(newX, newY, figure.radius) )) {
+                    figure.x += (newX - figure.x)/200;
+                    figure.y += (newY - figure.y)/200;
                 } else {
                     isMove = false;
                 }
             } else {
                 Circle targetFigure = gameWorld.getPlanets().containsKey(targetID)?gameWorld.getPlanets().get(targetID).getFigure():gameWorld.getMobs().get(targetID).getFigure();
                 if (!figure.overlaps(targetFigure)) {
-                    figure.x += (targetFigure.x - figure.x)/200;
-                    figure.y += (targetFigure.y - figure.y)/200;
+                    figure.x += (targetFigure.x - figure.x) / 200;
+                    figure.y += (targetFigure.y - figure.y) / 200;
+                } else {
+                    isMove = false;
                 }
             }
         }
@@ -51,8 +68,6 @@ public class SuperFigure {
 
     public void setNextPosition(float newX, float newY, int targetID){
         if(isSelected){
-            stepX = (newX - figure.x)/200;
-            stepY = (newY - figure.y)/200;
             isSelected = false;
             this.targetID = targetID;
             if(targetID == -1) {
@@ -95,101 +110,5 @@ public class SuperFigure {
      */
     public boolean getIsSelected() {
         return isSelected;
-    }
-
-    /**
-     * Getter for step x
-     * @return - step x
-     */
-    public float getStepX() {
-        return stepX;
-    }
-
-    /**
-     * Setter for step x
-     * @param stepX - step x
-     */
-    public void setStepX(float stepX) {
-        this.stepX = stepX;
-    }
-
-    /**
-     * Getter for step y
-     * @return - step y
-     */
-    public float getStepY() {
-        return stepY;
-    }
-
-    /**
-     * Setter for step y
-     * @param stepY - step y
-     */
-    public void setStepY(float stepY) {
-        this.stepY = stepY;
-    }
-
-    /**
-     * Getter for isMove
-     * @return - true if moving
-     */
-    public boolean getIsMove() {
-        return isMove;
-    }
-
-    /**
-     * Setter for isMove
-     * @param isMove - move or not move
-     */
-    public void setIsMove(boolean isMove) {
-        this.isMove = isMove;
-    }
-
-    /**
-     * Getter for target x position
-     * @return - target x position
-     */
-    public float getNewX() {
-        return newX;
-    }
-
-    /**
-     * Setter for target x position
-     * @param newX - target x position
-     */
-    public void setNewX(float newX) {
-        this.newX = newX;
-    }
-
-    /**
-     * Getter for target y position
-     * @return - target y position
-     */
-    public float getNewY() {
-        return newY;
-    }
-
-    /**
-     * Setter for target y position
-     * @param newY - target y position
-     */
-    public void setNewY(float newY) {
-        this.newY = newY;
-    }
-
-    /**
-     * Setter for new target
-     * @param targetID - new target
-     */
-    public void setTargetID(int targetID) {
-        this.targetID = targetID;
-    }
-
-    /**
-     * Getter for current target
-     * @return - current target
-     */
-    public int getTargetID() {
-        return targetID;
     }
 }

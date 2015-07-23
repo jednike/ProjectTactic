@@ -66,7 +66,7 @@ public class GameRenderer {
                 color = Color.ORANGE;
             }
             if(mob.getAttackedMob() != -1 && gameWorld.getMobs().containsKey(mob.getAttackedMob())){
-                shapeRenderer.rectLine(mob.getFigure().getPosition(), gameWorld.getMobs().get(mob.getAttackedMob()).getFigure().getPosition(), 5);
+                shapeRenderer.rectLine(mob.getFigure().getPosition(), gameWorld.getMobs().get(mob.getAttackedMob()).getFigure().getPosition(), 50);
                 mob.setAttackedMob(-1);
             }
             shapeRenderer.setColor(color);
