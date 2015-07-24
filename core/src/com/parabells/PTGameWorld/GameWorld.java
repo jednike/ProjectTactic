@@ -1,16 +1,18 @@
 package com.parabells.PTGameWorld;
 
+import com.parabells.PTClient.Add;
 import com.parabells.PTClient.AddHandler;
 import com.parabells.PTClient.AttackHandler;
 import com.parabells.PTClient.CommandHandler;
 import com.parabells.PTClient.DefaultCommand;
 import com.parabells.PTClient.DeltHandler;
+import com.parabells.PTClient.DeltaUpdateHandler;
 import com.parabells.PTClient.Move;
 import com.parabells.PTClient.MoveHandler;
 import com.parabells.PTClient.NewOwnerHandler;
 import com.parabells.PTClient.PingHandler;
 import com.parabells.PTClient.RemoveHandler;
-import com.parabells.PTClient.Setp;
+import com.parabells.PTClient.StartConfiguration;
 import com.parabells.PTGame.PTGame;
 import com.parabells.PTGameObjects.Mob;
 import com.parabells.PTGameObjects.Planet;
@@ -30,7 +32,9 @@ public class GameWorld {private PTGame game;
     private Map<String,CommandHandler> commandHandlers = new HashMap<String, CommandHandler>();
     private DefaultCommand command;
     private int playerID;
+    private int levelWidth, levelHeight;
     private boolean isSelected;
+    private float planetRadius;
 
     /**
      * Constructor
@@ -40,6 +44,7 @@ public class GameWorld {private PTGame game;
         this.game = game;
         selectedID = new ArrayList<Integer>();
         isSelected = false;
+        planetRadius = 30;
 
         commandHandlers.put("Move", new MoveHandler(game, this));
         commandHandlers.put("Attack", new AttackHandler(game, this));
@@ -48,6 +53,10 @@ public class GameWorld {private PTGame game;
         commandHandlers.put("Add", new AddHandler(game, this));
         commandHandlers.put("Remove", new RemoveHandler(game, this));
         commandHandlers.put("NewOwner", new NewOwnerHandler(game, this));
+        commandHandlers.put("DeltaUpdate", new DeltaUpdateHandler(game, this));
+
+        planets = new HashMap<Integer, Planet>();
+        mobs = new HashMap<Integer, Mob>();
 
         startGame();
     }
@@ -57,10 +66,13 @@ public class GameWorld {private PTGame game;
      */
     private void startGame(){
         String input = game.getInputQueue().poll();
-        Setp startPosition = game.json.fromJson(input, Setp.class);
-        planets = startPosition.planets;
-        mobs = startPosition.mobs;
-        playerID = startPosition.receiverID;
+        StartConfiguration startConfig = game.json.fromJson(input, StartConfiguration.class);
+        for(Add add: startConfig.add){
+            addNewObject(add.id, add.x, add.y, add.radius, add.ownerID);
+        }
+        levelWidth = startConfig.levelWidth;
+        levelHeight = startConfig.levelHeight;
+        playerID = startConfig.receiverID;
     }
 
     /**
@@ -160,7 +172,7 @@ public class GameWorld {private PTGame game;
      * @param screenX - screen position click X
      * @param screenY - screen position click Y
      */
-    public void clickOnWorld(int screenX, int screenY) {
+    public void clickOnWorld(float screenX, float screenY) {
         screenY = (int) (game.getScreenHeight() - screenY);
         Circle helpCircle = new Circle(screenX, screenY, 2);
         if(!checkOnTouch(helpCircle)){
@@ -218,6 +230,20 @@ public class GameWorld {private PTGame game;
             planets.remove(id);
         } else if(mobs.containsKey(id)){
             mobs.remove(id);
+        }
+    }
+
+    public float getPlanetRadius() {
+        return planetRadius;
+    }
+
+    public void deltaUpdate(ArrayList<Integer> id, ArrayList<Float> xPosition, ArrayList<Float> yPosition) {
+        for(int i = 0; i < id.size(); i++) {
+            if (planets.containsKey(id.get(i))) {
+                planets.get(id.get(i)).getFigure().setPosition(xPosition.get(i), yPosition.get(i));
+            } else if (mobs.containsKey(id.get(i))) {
+                mobs.get(id.get(i)).getFigure().setPosition(xPosition.get(i), yPosition.get(i));
+            }
         }
     }
 }

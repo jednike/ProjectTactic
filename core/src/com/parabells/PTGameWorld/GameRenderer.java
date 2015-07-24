@@ -19,6 +19,7 @@ public class GameRenderer {
     private GameWorld gameWorld;
     private OrthographicCamera camera;
     private ShapeRenderer shapeRenderer;
+    private float startPositionX, startPositionY;
 
     /**
      * Constructor
@@ -29,9 +30,32 @@ public class GameRenderer {
         this.game = game;
         this.gameWorld = gameWorld;
         camera = new OrthographicCamera(game.getScreenWidth(),game.getScreenHeight());
-        camera.position.set(game.getScreenWidth()/2f, game.getScreenHeight()/2f, 0);
+        for(Planet planet: gameWorld.getPlanets().values()){
+            if(planet.getOwnerID() == gameWorld.getPlayerID()){
+                startPositionX = planet.getFigure().x;
+                startPositionY = planet.getFigure().y;
+                break;
+            }
+        }
+        camera.position.set(startPositionX, startPositionY, 0);
         camera.update();
         shapeRenderer = new ShapeRenderer();
+        shapeRenderer.setProjectionMatrix(camera.combined);
+    }
+
+    public OrthographicCamera getCamera() {
+        return camera;
+    }
+
+    public void setNewCameraPosition(float x, float y){
+        camera.translate(x, y);
+        camera.update();
+        shapeRenderer.setProjectionMatrix(camera.combined);
+    }
+
+    public void setZoom(float zoom) {
+        camera.zoom = zoom;
+        camera.update();
         shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
@@ -59,6 +83,8 @@ public class GameRenderer {
         for(Mob mob: gameWorld.getMobs().values()) {
             if(mob.getOwnerID() == 1){
                 color = Color.GREEN;
+            } else if(mob.getOwnerID() == Utils.NEUTRAL_OWNER_ID){
+                color = Color.BLUE;
             } else if(mob.getOwnerID() == 2){
                 color = Color.RED;
             }

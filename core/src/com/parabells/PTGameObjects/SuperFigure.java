@@ -31,14 +31,14 @@ public class SuperFigure {
 
     public void update(GameWorld gameWorld, float delta){
         for(Mob mob: gameWorld.getMobs().values()) {
-            if(mob != this && figure.overlaps(mob.getFigure())){
-                if(mob.getOwnerID() == ownerID){
-                    if(mob.getFigure().x > figure.x){
+            if(mob.getOwnerID() == ownerID){
+                if(mob != this && figure.overlaps(mob.getFigure())){
+                    if(mob.getFigure().x >= figure.x){
                         mob.getFigure().x++;
                     } else if(mob.getFigure().x < figure.x){
                         mob.getFigure().x--;
                     }
-                    if(mob.getFigure().y > figure.y){
+                    if(mob.getFigure().y >= figure.y){
                         mob.getFigure().y++;
                     } else if(mob.getFigure().y < figure.y){
                         mob.getFigure().y--;
@@ -48,7 +48,7 @@ public class SuperFigure {
         }
         if (isMove) {
             if(targetID == -1) {
-                if (!figure.overlaps(new Circle(newX, newY, figure.radius) )) {
+                if (!figure.overlaps(new Circle(newX, newY, gameWorld.getPlanetRadius()) )) {
                     figure.x += (newX - figure.x)/200;
                     figure.y += (newY - figure.y)/200;
                 } else {
@@ -56,7 +56,7 @@ public class SuperFigure {
                 }
             } else {
                 Circle targetFigure = gameWorld.getPlanets().containsKey(targetID)?gameWorld.getPlanets().get(targetID).getFigure():gameWorld.getMobs().get(targetID).getFigure();
-                if (!figure.overlaps(targetFigure)) {
+                if (targetFigure != null && !figure.overlaps(targetFigure)) {
                     figure.x += (targetFigure.x - figure.x) / 200;
                     figure.y += (targetFigure.y - figure.y) / 200;
                 } else {

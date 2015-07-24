@@ -3,6 +3,7 @@ package com.parabells.PTScreens;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.input.GestureDetector;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -76,9 +77,9 @@ public class GameScreen implements Screen {
                 if(game.getClient().getFuser() != null && !game.getClient().getFuser().equals("")){
                     gameWorld = new GameWorld(game);
                     gameRenderer = new GameRenderer(game, gameWorld);
-                    gameAction = new GameAction(gameWorld);
+                    gameAction = new GameAction(gameWorld, gameRenderer, game);
                     game.currentState = PTGame.GameState.RUNNING;
-                    Gdx.input.setInputProcessor(gameAction);
+                    Gdx.input.setInputProcessor(new GestureDetector(gameAction));
                 }
                 break;
             case MENU:
